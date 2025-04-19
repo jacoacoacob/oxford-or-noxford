@@ -1,3 +1,4 @@
+import { checkOxfordComma } from "./check-oxford-comma.js";
 
 const textarea = document.querySelector("textarea");
 
@@ -14,16 +15,11 @@ function checkAcronymPunctuationStyle({ suggestions, text }) {
   const withPeriodsMatches = text.matchAll(withPeriodsPattern);
   const withoutPeriodsMatches = text.matchAll(withoutPeriodsPattern);
 
-  console.log({
-    withPeriodsMatches: Array.from(withPeriodsMatches),
-    withoutPeriodsMatches: Array.from(withoutPeriodsMatches)
-  });
-
   return { suggestions, text };
 }
 
 function handleTextareaInput(ev) {
-  const suggestions = composeChecks(ev.target.value, checkAcronymPunctuationStyle)
+  const suggestions = composeChecks(ev.target.value, checkAcronymPunctuationStyle, checkOxfordComma);
 }
 
 textarea.addEventListener("input", handleTextareaInput);
