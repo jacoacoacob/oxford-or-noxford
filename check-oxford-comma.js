@@ -149,6 +149,7 @@ function scanCommaStyle(tokens) {
       sequence = [];
       commaCount = 0;
       isOxfordComma = false;
+      includesAnd = false;
 
       continue;
     }
@@ -176,7 +177,7 @@ function scanCommaStyle(tokens) {
           break;
         }
 
-        if (back && back.kind === TOKEN.COMMA) {
+        if (back && back.kind === TOKEN.COMMA && commaCount >= 2) {
           isOxfordComma = true;
         }
       }

@@ -74,11 +74,13 @@ export { useKonamiCode };
 
 ---
 
-I went to the store, the coffee shop and the 
-bar.
+I went to the store, the coffee shop and the bar.
 
 I went to the store, the coffee shop, and the bar.
 
+I saw the tree. Went down the road and got some water, and ate some food.
+
+We invited Jan and Ted, as well as our grouchy neighbors.
 ---
 
 */
