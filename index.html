@@ -3,14 +3,27 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Document</title>
+  <title>Oxford or Noxford</title>
   <link rel="stylesheet" href="main.css">
   <script type="module" src="main.js"></script>
 </head>
 <body>
   <main id="app">
-    <textarea name="" id="" class="textarea"></textarea>
-    <div id="output"></div>
+    <h1>Oxford or Noxford</h1>
+    <button id="btn-compute">Check The Text</button>
+    <div class="select">
+      <label for="preference-selector">Preferred Style</label>
+      <select class="select__select" name="" id="preference-selector">
+        <option value="oxford" selected>Oxford commas please</option>
+        <option value="non_oxford">I don't like good grammar</option>
+        <option value="most_common">Whatever the group is doing 😀</option>
+      </select>
+    </div>
+    <textarea class="textarea"></textarea>
+    <section>
+      <h2>Suggestions</h2>
+      <ul class="suggestions"></ul>
+    </section>
   </main>
 </body>
 </html>
