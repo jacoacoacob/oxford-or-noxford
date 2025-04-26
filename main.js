@@ -85,9 +85,12 @@ function subject(initialValue) {
 /**
  * @typedef Token Data representing a unit of text
  * @property {string} kind The kind of token it is
- * @property {number} weight If a token's start/end range overlaps another token's, the higher weighted token should be given priority when reconciling overlaps
+ * @property {number} weight If a token's start/end range overlaps another
+ *                           token's, the higher weighted token should be given
+ *                           priority when reconciling overlaps
  * @property {string} match The actual characters that matched the pattern
- * @property {number} length The length of the string made up of the characters that matched the pattern - the number of characters in {@link Token.match}
+ * @property {number} length The length of the string made up of the characters that
+ *                           matched the pattern - the number of characters in {@link Token.match}
  * @property {number} start The source index of the *first* character of the match
  * @property {number} end The source index of the *last* character of the match
  * @property {string} before The string of characters in the source that appear *before* the match
@@ -265,6 +268,10 @@ function scanCommaStyle(tokens) {
 
   return matches;
 }
+
+// *******************************************************
+// *** Oxford Comma Grammar Logic (...continuted)  *******
+// *******************************************************
 
 /**
  * 
