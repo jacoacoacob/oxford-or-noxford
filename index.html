@@ -10,15 +10,23 @@
 <body>
   <main id="app">
     <h1>Oxford or Noxford</h1>
-    <button id="btn-compute">Check The Text</button>
-    <div class="select">
-      <label for="preference-selector">Preferred Style</label>
-      <select class="select__select" name="" id="preference-selector">
-        <option value="oxford" selected>Oxford commas please</option>
-        <option value="non_oxford">I don't like good grammar</option>
-        <option value="most_common">Whatever the group is doing 😀</option>
-      </select>
-    </div>
+    <section class="control-bar">
+      <div class="select">
+        <label class="select__label" for="preference-selector">
+          Preferred Style
+        </label>
+        <select class="select__select" name="" id="preference-selector">
+          <option value="oxford" selected>Oxford commas please</option>
+          <option value="non_oxford">I don't like good grammar</option>
+          <option value="most_common">Whatever the group is doing 😀</option>
+        </select>
+      </div>
+      <div>
+        <button id="btn-compute" class="button">
+          Check The Text
+        </button>
+      </div>
+    </section>
     <textarea class="textarea"></textarea>
     <section>
       <h2>Suggestions</h2>
