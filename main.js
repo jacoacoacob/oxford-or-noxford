@@ -269,10 +269,6 @@ function scanCommaStyle(tokens) {
   return matches;
 }
 
-// *******************************************************
-// *** Oxford Comma Grammar Logic (...continuted)  *******
-// *******************************************************
-
 /**
  * 
  * @param {Token[]} tokens 
