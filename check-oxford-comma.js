@@ -1,6 +1,7 @@
 /**
  * @typedef Token
  * @property {string} kind The kind of token it is
+ * @property {number} weight If a token's start/end range overlaps another token's, the higher weighted token should be given priority when reconciling overlaps
  * @property {string} match The actual characters that matched the pattern
  * @property {number} length The length of the string made up of the characters that matched the pattern - the number of characters in {@link Token.match}
  * @property {number} start The source index of the *first* character of the match
@@ -17,9 +18,10 @@
  * @param {string} source 
  * @returns {Token[]}
  */
-function matchAll(kind, pattern, source) {
+function matchAll(kind, pattern, weight, source) {
   return Array.from(source.matchAll(pattern)).map((match) => ({
     kind,
+    weight,
     match: match[0],
     length: match[0].length,
     start: match.index,
@@ -32,50 +34,82 @@ function matchAll(kind, pattern, source) {
 
 /**
  * 
- * @param {string} srouce 
+ * @param {Token[]} tokens 
  */
-function tokenize(source) {
-  const tokens = [
-    matchAll("end_sentence",  /(\.|!|\?)+/g,  source),
-    matchAll("comma",         /,/g,           source),
-    matchAll("word",          /\w+/g,         source),
-    matchAll("whitespace",    /\s+/g,         source), 
-  ];
+function reconcileOverlaps(tokens) {
+  /** @type {Token[]} */
+  const final = [];
+  
+  for (let a = 0; a < tokens.length; a++) {
+    const tokenA = tokens[a];
+    
+    for (let b = 0; b < tokens.length; b++) {
+      if (a === b) {
+        continue;
+      }
 
-  return tokens
-    .flat()
+      const tokenB = tokens[b];
+
+      if (tokenA.weight !== tokenB.weight) {
+
+        // tokenA    ****
+        // tokenB    ****
+        if (tokenA.start >= tokenB.start && tokenA.end <= tokenB.end) {
+
+          console.log("OVERLAP", {
+            tokenA: { kind: tokenA.kind, match: tokenA.match },
+            tokenB: { kind: tokenB.kind, match: tokenB.match },
+          });
+          continue;
+        }
+
+        // tokenA   ****
+        // tokenB     ****
+        if (tokenA.end >= tokenB.start && tokenB.end <= tokenB.end) {
+          // this shouldn't happen...
+          console.log(`
+            tokenA   ****
+            tokenB     ****
+          `);
+          continue;
+        }
+  
+        // tokenA     ****
+        // tokenB   ****
+        if (tokenA.start >= tokenB.start <= tokenB.end) {
+          // this shouldn't happen...
+          console.log(`
+            tokenA     ****
+            tokenB   ****
+          `);
+          continue;
+        }
+      }
+
+      final.push(tokenA);
+    }
+  }
+
+  return Array
+    .from(final)
     .sort((tokenA, tokenB) => tokenA.start - tokenB.start);
 }
 
 
 /**
  * 
- * @param {Token[]} tokens 
- * @returns {Token[][]}
+ * @param {string} srouce 
  */
-function groupSentences(tokens) {
-  const groups = [];
+function tokenize(source) {
+  const tokens = [
+    matchAll("end_sentence",  /(\.|!|\?)+/g,        1,  source),
+    matchAll("comma",         /,/g,                 1,  source),
+    matchAll("and",           /(?<=\W)and(?=\W)/g,  2,  source),
+    matchAll("word",          /\w+/g,               1,  source),
+    matchAll("whitespace",    /\s+/g,               1,  source),
+  ];
 
-  let group = [];
-
-  for (let i = 0; i < tokens.length; i++) {
-    const current = tokens[i];
-
-    group.push(current);
-
-    if (current.kind === "end_sentence") {
-      groups.push(group);
-      group = [];
-    }
-  }
-
-  const wordTokensInGroup = group.filter((token) => token.kind === "word");
-
-  if (wordTokensInGroup.length > 0) {
-    groups.push(group);
-  }
-
-  return groups;
+  return reconcileOverlaps(tokens.flat());
 }
 
 
@@ -85,23 +119,26 @@ function groupSentences(tokens) {
  */
 
 
+const SEQUENCE = [
+  "word",
+  ""
+]
+
 /**
  * 
- * @param {Token[][]} sentences 
+ * @param {Token[]} sentences 
  * @returns {Suggestion[]}
  */
-function findOxfordCommas(sentences) {
-  return sentences.reduce((accum, sentence) => {
+function scanOxfordCommaStyle(tokens) {
 
-  }, []);
 }
 
 
 export function checkOxfordComma({ suggestions, text }) {
   const tokens = tokenize(text);
-  const sentences = groupSentences(tokens);
+  const oxfordCommaStyles = scanOxfordCommaStyle(tokens);
 
-  const oxfordCommas = findOxfordCommas(sentences);
+
 
   return { suggestions, text };
 }
