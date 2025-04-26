@@ -65,3 +65,20 @@ function useKonamiCode() {
 }
 
 export { useKonamiCode };
+
+
+/*
+************************
+**** TEST DOCUMENTS ****
+************************
+
+---
+
+I went to the store, the coffee shop and the 
+bar.
+
+I went to the store, the coffee shop, and the bar.
+
+---
+
+*/

@@ -1,3 +1,9 @@
+
+/**
+ * @typedef Suggestion
+ * 
+ */
+
 /**
  * @typedef Token
  * @property {string} kind The kind of token it is
@@ -39,6 +45,8 @@ function matchAll(kind, pattern, weight, source) {
 function reconcileOverlaps(tokens) {
   /** @type {Token[]} */
   const final = [];
+
+  const remove = [];
   
   for (let a = 0; a < tokens.length; a++) {
     const tokenA = tokens[a];
@@ -50,44 +58,24 @@ function reconcileOverlaps(tokens) {
 
       const tokenB = tokens[b];
 
-      if (tokenA.weight !== tokenB.weight) {
-
-        // tokenA    ****
-        // tokenB    ****
-        if (tokenA.start >= tokenB.start && tokenA.end <= tokenB.end) {
-
-          console.log("OVERLAP", {
-            tokenA: { kind: tokenA.kind, match: tokenA.match },
-            tokenB: { kind: tokenB.kind, match: tokenB.match },
-          });
-          continue;
+      // tokenA    ****
+      // tokenB    ****
+      if (tokenA.start >= tokenB.start && tokenA.end <= tokenB.end) {
+        if (tokenA.weight > tokenB.weight) {
+          remove.push(b);
         }
 
-        // tokenA   ****
-        // tokenB     ****
-        if (tokenA.end >= tokenB.start && tokenB.end <= tokenB.end) {
-          // this shouldn't happen...
-          console.log(`
-            tokenA   ****
-            tokenB     ****
-          `);
-          continue;
-        }
-  
-        // tokenA     ****
-        // tokenB   ****
-        if (tokenA.start >= tokenB.start <= tokenB.end) {
-          // this shouldn't happen...
-          console.log(`
-            tokenA     ****
-            tokenB   ****
-          `);
-          continue;
+        if (tokenA.weight < tokenB.weight) {
+          remove.push(a);
         }
       }
-
-      final.push(tokenA);
     }
+
+    if (remove.includes(a)) {
+      continue;
+    }
+
+    final.push(tokenA);
   }
 
   return Array
@@ -95,6 +83,18 @@ function reconcileOverlaps(tokens) {
     .sort((tokenA, tokenB) => tokenA.start - tokenB.start);
 }
 
+const TOKEN = {
+  /** End of Sentence */
+  EOS:        "eos",
+  /** A comma (`","`) */
+  COMMA:      "comma",
+  /** The word `"and"` */
+  AND:        "and",
+  /** Any word */
+  WORD:       "word",
+  /** Whitespace (`" "`) */
+  WHITESPACE: "whitespace",
+}
 
 /**
  * 
@@ -102,42 +102,96 @@ function reconcileOverlaps(tokens) {
  */
 function tokenize(source) {
   const tokens = [
-    matchAll("end_sentence",  /(\.|!|\?)+/g,        1,  source),
-    matchAll("comma",         /,/g,                 1,  source),
-    matchAll("and",           /(?<=\W)and(?=\W)/g,  2,  source),
-    matchAll("word",          /\w+/g,               1,  source),
-    matchAll("whitespace",    /\s+/g,               1,  source),
+    matchAll(TOKEN.EOS,         /(\.|!|\?)+/g,        1,  source),
+    matchAll(TOKEN.COMMA,       /,/g,                 1,  source),
+    matchAll(TOKEN.AND,         /(?<=\W)and(?=\W)/g,  2,  source),
+    matchAll(TOKEN.WORD,        /\w+/g,               1,  source),
+    matchAll(TOKEN.WHITESPACE,  /\s+/g,               1,  source),
   ];
 
   return reconcileOverlaps(tokens.flat());
 }
 
-
-/**
- * @typedef Suggestion
- * 
- */
-
-
-const SEQUENCE = [
-  "word",
-  ""
-]
-
 /**
  * 
- * @param {Token[]} sentences 
- * @returns {Suggestion[]}
+ * @param {Token[]} tokens 
+ * @returns {}
  */
-function scanOxfordCommaStyle(tokens) {
+function scanCommaStyle(tokens) {
+  const matches = [];
 
+  /** @type {Token[]} */
+  let sequence = [];
+  let commaCount = 0;
+  let includesAnd = false;
+  let isOxfordComma = false;
+
+  for (let i = 0; i < tokens.length; i++) {
+    const current = tokens[i];
+
+    sequence.push(current);
+
+    if (current.kind === TOKEN.EOS || i === tokens.length - 1) {
+
+      if (
+        commaCount >= 2 ||
+        (
+          includesAnd && commaCount >= 1
+        )
+      ) {
+        matches.push({
+          isOxfordComma,
+          sequence,
+          text: sequence.map((token) => token.match).join(""),
+        });
+      }
+      
+      sequence = [];
+      commaCount = 0;
+      isOxfordComma = false;
+
+      continue;
+    }
+    
+    if (current.kind === TOKEN.COMMA) {
+      commaCount += 1;
+    }
+
+    if (current.kind === TOKEN.AND) {
+      includesAnd = true;
+
+      let b = i;
+      
+      // look back
+      while (true) {
+        b -= 1;
+
+        if (b < 0) {
+          break;
+        }
+
+        const back = tokens[b];
+
+        if (back && [TOKEN.AND, TOKEN.WORD, TOKEN.EOS].includes(back.kind)) {
+          break;
+        }
+
+        if (back && back.kind === TOKEN.COMMA) {
+          isOxfordComma = true;
+        }
+      }
+    }
+  }
+
+  return matches;
 }
 
 
 export function checkOxfordComma({ suggestions, text }) {
   const tokens = tokenize(text);
-  const oxfordCommaStyles = scanOxfordCommaStyle(tokens);
+  const commaStyleMatches = scanCommaStyle(tokens);
 
+  console.log(commaStyleMatches)
 
 
   return { suggestions, text };
